@@ -1,245 +1,244 @@
 # Benchmarking Tabular Foundation Models for CATE Estimation
 
-How well do **tabular foundation models** estimate heterogeneous treatment effects when data is
-scarce or noisy? This project benchmarks three prior-data fitted networks (PFNs) on
-**conditional average treatment effect (CATE)** estimation:
+[![tests](https://github.com/0u88/cate-benchmark/actions/workflows/tests.yml/badge.svg)](https://github.com/0u88/cate-benchmark/actions/workflows/tests.yml)
+![python](https://img.shields.io/badge/python-3.10%20%7C%203.12-blue)
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-- **TabPFN v3**: a general-purpose tabular foundation model, used as a T-learner
-- **CausalPFN**: pretrained specifically for causal effect estimation (Balazadeh et al., 2025)
-- **Do-PFN**: pretrained on structural causal models (Robertson et al., 2025)
+Can a **general-purpose tabular foundation model** estimate heterogeneous treatment effects as
+well as models **pretrained specifically for causal inference**? This project benchmarks three
+prior-data fitted networks (PFNs), transformers that do approximate Bayesian inference in a
+single forward pass, on **conditional average treatment effect (CATE)** estimation:
 
-The benchmark covers four standard causal-inference datasets: IHDP, ACIC 2016, Lalonde CPS, and
-Lalonde PSID.
+| Model | Pretraining prior | How it estimates the CATE |
+|---|---|---|
+| **TabPFN v3** (Prior Labs, 2026) | General tabular prediction | T-learner: τ̂(x) = μ̂₁(x) − μ̂₀(x) |
+| **CausalPFN** (Balazadeh et al., 2025) | Synthetic causal data-generating processes | Direct estimation |
+| **Do-PFN** (Robertson et al., 2025) | Synthetic structural causal models | Predicts p(y \| do(t), x) |
 
-**Poster:** [`poster.pdf`](poster.pdf) (A0) summarizes the project.
+The benchmark uses four standard datasets (IHDP, ACIC 2016, Lalonde CPS, and Lalonde PSID) and
+12,312 model fits. **Poster:** [`poster.pdf`](poster.pdf).
+
+## Quick start
+
+Every figure and table is rebuilt from the committed results. This needs no GPU, models or
+datasets:
+
+```bash
+pip install -e ".[plot]"
+cate-bench plot                     # figures/fig1_sample_size.png, figures/fig2_contamination.png
+cate-bench tables                   # results/tables/*.md
+cate-bench diagnose effect-scale    # results/diagnostics/effect_scale.md
+```
 
 ## Research questions
 
-1. How does a **general-purpose** tabular foundation model compare with **causally-pretrained**
-   ones for CATE estimation?
-2. How does CATE accuracy **scale with training-set size** in the small-sample regime?
-3. How **robust** are these models when the observed covariates are **contaminated** with
-   measurement noise?
+1. How does a general-purpose tabular foundation model compare with causally-pretrained ones?
+2. How does CATE accuracy scale with training-set size in the small-sample regime?
+3. How robust are these models when the observed covariates carry measurement noise?
 
 ## Results
 
-All errors are root-PEHE (lower is better). Two model-free reference lines appear in every figure:
+All errors are root-PEHE, √mean((τ − τ̂)²), where lower is better. Two model-free reference
+levels anchor every result:
 
-- **Predict-0** (dashed): the error of always predicting τ̂ = 0.
-- **Oracle** (dotted): the error of a constant predictor that already knows the true average
-  treatment effect. A method below this line has captured genuine effect heterogeneity.
+- **Predict-0**: the error of always predicting τ̂ = 0.
+- **Oracle**: sd(τ), the error of a constant predictor that already knows the true average effect.
+  A method below the oracle has captured genuine effect heterogeneity.
 
-### Experiment 1: Baseline CATE estimation
+### Experiment 1: Baseline estimation on the full training pool
 
-This experiment uses each dataset's full training pool and fixed test set. Each value is root-PEHE
-divided by the oracle error, so values below 1 beat the oracle constant predictor.
+Root-PEHE divided by the oracle error ([`results/tables/full_pool.md`](results/tables/full_pool.md)).
+Values below 1 beat the oracle.
 
 | Model | IHDP | ACIC 2016 | Lalonde CPS | Lalonde PSID |
 |---|---|---|---|---|
 | TabPFN v3 (T-learner) | 0.417 | **0.102** | 0.837 | **0.770** |
-| CausalPFN | **0.197** | 0.176 | **0.827** | 0.784 |
-| Do-PFN | 2.125 | 1.040 | 1.134 | 1.225 |
+| CausalPFN | **0.198** | 0.176 | **0.827** | 0.784 |
+| Do-PFN | 2.126 | 1.040 | 1.134 | 1.225 |
 
-TabPFN v3 and CausalPFN perform similarly. Do-PFN does not beat the oracle on any dataset, meaning
-it doesn't recover the heterogeneity of the treatment effect.
+The general-purpose model and the causal specialist are on par: each wins two datasets. Do-PFN
+does not beat the oracle on any dataset.
 
 ### Experiment 2: CATE vs. training-set size
 
-Training sets range from n = 100 to 500. Lalonde CPS uses n = 2,000 to 10,000 instead, because
-only 1% of its units are treated. Each cell is repeated over 100 independent training draws.
+n = 100 to 500, or 2,000 to 10,000 for Lalonde CPS, where only 1.06% of units are treated.
+Each cell has 100 independent training draws.
 
-![PEHE vs. training-set size, 100 draws per cell](figures/boxplot_all_datasets.png)
+![Root-PEHE vs. training-set size](figures/fig1_sample_size.png)
 
-For all three models, median error drops sharply at first and then levels off at a
-dataset-specific floor. Beyond that point, more data still narrows the spread across draws and
-reduces worst-case error. On IHDP, TabPFN is better below n ≈ 300 and CausalPFN is better above it.
+Median error drops sharply and then levels off at a dataset-specific floor. Beyond that point,
+more data still narrows the spread across draws and reduces worst-case error. On IHDP, TabPFN is
+better below n ≈ 300 and CausalPFN is better above it.
 
 ### Experiment 3: CATE vs. covariate contamination
 
-Training size is fixed (n = 2,000 for Lalonde CPS, n = 500 otherwise). Noise is added to the
-covariates only, from σ = 0.01 (essentially clean) to σ = 10 (about 10% of the original signal
-left).
+Noise is added to the covariates only, from σ = 0.01 (essentially clean) to σ = 10 (about 10% of
+the original signal left). Training size is fixed: n = 2,000 for Lalonde CPS and n = 500 for the
+other datasets.
 
-![PEHE vs. covariate contamination, 100 draws per cell](figures/contamination_all_datasets.png)
+![Root-PEHE vs. covariate contamination](figures/fig2_contamination.png)
 
 Causal pretraining gives no robustness advantage. TabPFN and CausalPFN degrade at similar rates on
-three of the four datasets; on IHDP, CausalPFN degrades faster. Under extreme noise, their
-estimates approach the oracle constant predictor. On ACIC 2016, severe contamination pushes both
-models above the predict-0 line, so they do worse than assuming no treatment effect at all.
+three of the four datasets; on IHDP, CausalPFN degrades faster. Under extreme noise both approach
+the oracle. On ACIC 2016 they end up above the predict-0 line, worse than assuming no effect at all.
 
-Per-dataset numbers (median and interquartile range over 100 draws) are in
-[`results/summary_boxplot.md`](results/summary_boxplot.md),
-[`results/summary_boxplot_large_n.md`](results/summary_boxplot_large_n.md), and
-[`results/summary_contamination.md`](results/summary_contamination.md).
+## Why Do-PFN fails: a mismatch with its pretraining prior
+
+An amortized estimator can only be as good as the overlap between its synthetic pretraining prior
+and the real data-generating process. Do-PFN's failures trace back to two specific gaps in that
+overlap. Both diagnostics are in [`src/cate_benchmark/diagnostics/`](src/cate_benchmark/diagnostics/).
+
+**1. It cannot use more covariates than it was trained on.** The Do-PFN v1 checkpoint embeds a
+whole row as one token through a `Linear(170 → 192)` layer indexed by column position.
+Pretraining only ever filled the first 7 columns (the treatment plus at most 6 covariates), so
+the weights for every later column never received a gradient. IHDP has 25 covariates and ACIC
+2016 has 58. The prediction is that restricting the input to about 6 covariates should *help*
+Do-PFN. It does ([`results/diagnostics/dopfn_width.json`](results/diagnostics/dopfn_width.json);
+IHDP, n = 500, mean of 3 random covariate subsets):
+
+| Covariates used | 2 | 4 | 6 | 8 | 12 | 16 | 20 | 25 (all) |
+|---|---|---|---|---|---|---|---|---|
+| Do-PFN root-PEHE | 0.859 | **0.795** | 0.815 | 1.055 | 1.046 | 1.834 | 1.875 | 1.490 |
+
+With 4–6 covariates, Do-PFN's error nearly halves (1.490 → 0.795) and reaches the oracle level
+(0.79). Random subsets can omit key covariates, which is why 16 and 20 are worse than using all 25.
+On ACIC 2016, narrowing the input does not help: the error stays at 4.0–4.3 for every width, close
+to the predict-0 level of 4.53. That is the second failure mode.
+
+**2. It shrinks large effects.** Do-PFN's prior treats the treatment as one node among many, so
+effects that are large relative to the outcome's spread are rare in pretraining. On IHDP, where
+sd(τ)/sd(y) is 0.36, Do-PFN's predicted effects vary about as much as the true ones do. On the
+three datasets where that ratio is 0.8 or more, they vary only 7–22% as much. The general-purpose
+TabPFN compresses far less
+([`results/diagnostics/effect_scale.md`](results/diagnostics/effect_scale.md)):
+
+| Dataset | sd(τ)/sd(y) | Do-PFN sd(τ̂)/sd(τ) | TabPFN sd(τ̂)/sd(τ) | CausalPFN sd(τ̂)/sd(τ) |
+|---|---|---|---|---|
+| IHDP | 0.36 | 1.01 | 1.13 | 0.99 |
+| ACIC 2016 | 0.81 | **0.07** | 0.97 | 0.97 |
+| Lalonde CPS | 1.10 | **0.13** | 0.66 | 0.54 |
+| Lalonde PSID | 1.11 | **0.22** | 0.68 | 0.59 |
+
+The two mechanisms separate cleanly. On IHDP the scale is right, but the uninformative extra
+covariates add noise: the error is 1.40 × sd(τ) even after removing the average-effect bias. On
+the other three datasets the predictions are compressed toward a constant.
 
 ## Experimental design
 
 | | |
 |---|---|
-| **Datasets** | IHDP (25 covariates), ACIC 2016 (58), Lalonde CPS (8), Lalonde PSID (8). Splits and ground-truth CATE follow the CausalPFN benchmark loaders, realization 0. |
-| **Training sizes** | n ∈ {100, 200, 300, 400, 500}. Lalonde CPS also uses n ∈ {2,000, …, 10,000}, because only ~1% of units are treated. |
-| **Repetitions** | 100 independent uniform training draws per cell, nested in n. The test set is identical across draws, so the spread reflects training-sample variability only. |
-| **Metric** | root-PEHE = √mean((τ − τ̂)²), using CausalPFN's definition so numbers are comparable to the published tables. |
-| **Reference lines** | predict-0 = √mean(τ²) and oracle = sd(τ). Both depend only on the test set. |
-| **Contamination** | Numeric covariates: additive Gaussian noise `x + σ·sd(x)·ε`. Binary/categorical covariates: resampled from the empirical marginal with probability `p = 1 − 1/√(1+σ²)`, which matches the same correlation with the clean value. |
-
-All three methods read the exact same pre-computed training rows. Because the random draw
-(`np.random.default_rng(r).permutation`) was verified to give bit-identical results under both
-numpy versions used, every method sees the same data even though they run in different Python
-environments.
+| **Data** | CausalPFN's benchmark loaders, realization 0; test sets and ground-truth CATE exactly as CausalPFN publishes them. |
+| **Training draws** | Draw r uses `default_rng(r).permutation(pool)[:n]`. The draw is nested in n and identical across numpy versions, so all methods see the same rows even though they run in different environments. Only the training draw varies; the test set is fixed. |
+| **Repetitions** | 100 draws per cell in Experiments 2 and 3. |
+| **Failed draws** | A draw with too few treated units can be unfittable. It is recorded, and each comparison uses only the draws every method could fit. |
+| **Contamination** | Numeric covariates: `x + σ·sd(x)·ε`. Binary covariates are resampled from their empirical marginal with probability p = 1 − 1/√(1+σ²), which gives the same correlation with the clean value, 1/√(1+σ²), as the numeric noise. Gaussian noise would flip TabPFN's column-type detection from categorical to numeric at the first σ. |
+| **Metric** | Root-PEHE as defined by CausalPFN, so values are comparable to its published tables. |
 
 ## Repository layout
 
 ```
 cate-benchmark/
-├── scripts/
-│   ├── common.py                 shared constants, data loading, PEHE
-│   ├── prepare_data.py           build the train/test splits (.npz)
-│   ├── run_reps.py               main runner: one method × all (dataset, n, draw) cells
-│   ├── run_contamination.py      runner for the contamination sweep
-│   ├── contaminate.py            covariate-noise model
-│   ├── run_{tabpfn,causalpfn,dopfn}.py   single-draw runners (Experiment 1)
-│   ├── plot_boxplot.py           Figure 1
-│   ├── plot_contamination.py     Figure 2
-│   └── plot_style.py             shared figure style and reference lines
+├── src/cate_benchmark/
+│   ├── config.py          the four experiments, datasets, methods and paths
+│   ├── data.py            dataset loading and the nested training draws
+│   ├── estimators.py      TabPFN T-learner, CausalPFN, Do-PFN behind one interface
+│   ├── contamination.py   covariate-noise model
+│   ├── runner.py          one resumable runner for every experiment
+│   ├── results.py         result storage and the common-draw comparison
+│   ├── tables.py          result tables
+│   ├── plotting/          Figures 1 and 2
+│   ├── diagnostics/       the two Do-PFN diagnostics
+│   └── cli.py             `cate-bench` command
 ├── results/
-│   ├── reps/                     per-draw results (7,500 records)
-│   ├── contamination/            per-draw results (4,800 records)
-│   ├── *.json                    single-draw runs at every training size (Experiment 1 table)
-│   └── summary_*.md              median [Q1, Q3] tables for Experiments 2 and 3
-├── figures/                      the two poster figures shown above
-├── poster.pdf                    A0 research poster
-├── requirements/                 frozen environments
-└── third_party/                  Do-PFN compatibility patch; upstream repos are cloned here
+│   ├── full-pool/ sample-size/ sample-size-large/ contamination/   per-fit results (JSON)
+│   ├── datasets.json      dataset statistics and reference levels
+│   ├── tables/            generated tables
+│   └── diagnostics/       diagnostic outputs
+├── tests/                 unit tests and integrity checks on the committed results
+├── figures/               the two poster figures
+├── requirements/          pinned environments
+├── third_party/           Do-PFN compatibility patch
+└── poster.pdf
 ```
 
-Every runner is **resumable**: results are merged by `(dataset, n_train, rep)`, so re-running a
-command skips cells that are already on disk.
+## Reproducing the experiments
 
-## Reproducing
-
-All per-draw results are committed in `results/`. To only redraw the figures from them, do steps
-1–3 and 5; this doesn't need a GPU. Step 4 re-runs the experiments themselves.
-
-**1. Clone the two upstream model repositories** at the commits used in this study:
+**1. Clone the upstream model repositories** at the commits used in this study:
 
 ```bash
 git clone https://github.com/vdblm/CausalPFN third_party/CausalPFN
 git -C third_party/CausalPFN checkout 7da4afa
-
 git clone https://github.com/jr2021/Do-PFN third_party/Do-PFN
 git -C third_party/Do-PFN checkout 90d6743
 git -C third_party/Do-PFN apply ../dopfn.patch
 ```
 
-`third_party/dopfn.patch` makes three small compatibility fixes to Do-PFN: it replaces hard-coded
-cluster data paths, adds a missing `typing.Optional` import, and updates for the scikit-learn
-`force_all_finite` → `ensure_all_finite` rename. To use clones stored somewhere else, set the
-`CAUSALPFN_REPO` and `DOPFN_REPO` environment variables.
+The patch fixes hard-coded cluster paths, adds a missing import, and follows a scikit-learn
+parameter rename.
 
-**2. Create two Python environments.** CausalPFN's dependencies need Python 3.10:
-
-```bash
-# TabPFN v3 + Do-PFN
-python3.12 -m venv .venv-tabpfn && .venv-tabpfn/bin/pip install -r requirements/tabpfn-dopfn.txt
-# CausalPFN
-python3.10 -m venv .venv-causalpfn && .venv-causalpfn/bin/pip install -r requirements/causalpfn.txt
-
-export PY_DOPFN=$PWD/.venv-tabpfn/bin/python
-export PY_CAUSALPFN=$PWD/.venv-causalpfn/bin/python
-```
-
-TabPFN v3 weights require an access token from [Prior Labs](https://priorlabs.ai).
-CausalPFN weights are downloaded automatically on first use. Do-PFN weights are included in its
-repository.
-
-**3. Prepare the data splits.** This reads the four datasets through the CausalPFN benchmark
-loaders and writes the train/test splits to `data/`. ACIC 2016 is downloaded on first use.
+**2. Create the two environments.** CausalPFN's dependencies need Python 3.10. For CUDA, see the
+header of each requirements file.
 
 ```bash
-cd scripts
-$PY_DOPFN prepare_data.py
-CATE_TRAIN_SIZES=2000,4000,6000,8000,10000 $PY_DOPFN prepare_data.py --datasets lalonde_cps
+python3.12 -m venv .venv-tabpfn    && .venv-tabpfn/bin/pip install -r requirements/tabpfn-dopfn.txt -e .
+python3.10 -m venv .venv-causalpfn && .venv-causalpfn/bin/pip install -r requirements/causalpfn.txt -e .
 ```
 
-**4. Run the experiments.** Experiment 1 uses the full training pool of each dataset:
+TabPFN v3 needs an access token from [Prior Labs](https://priorlabs.ai). CausalPFN downloads its
+weights on first use. On macOS, set `OMP_NUM_THREADS=1` for the CausalPFN environment: it
+bundles several copies of OpenMP, which otherwise crash on model loading.
+
+**3. Run.** Each experiment is resumable: re-running a command skips finished cells.
 
 ```bash
-for pair in ihdp:672 acic2016:4321 lalonde_cps:14559 lalonde_psid:2407; do
-  ds=${pair%%:*}; n=${pair##*:}
-  CATE_TRAIN_SIZES=$n $PY_DOPFN     prepare_data.py --datasets $ds
-  CATE_TRAIN_SIZES=$n $PY_DOPFN     run_tabpfn.py --learner t --datasets $ds
-  CATE_TRAIN_SIZES=$n $PY_DOPFN     run_dopfn.py --datasets $ds
-  CATE_TRAIN_SIZES=$n $PY_CAUSALPFN run_causalpfn.py --datasets $ds
-done
+cate-bench list
+for m in tabpfn_t dopfn; do .venv-tabpfn/bin/cate-bench run sample-size --method $m; done
+.venv-causalpfn/bin/cate-bench run sample-size --method causalpfn
+# likewise for full-pool, sample-size-large and contamination
 ```
 
-The table divides each root-PEHE by the dataset's oracle error, sd(τ) on the test set.
+**Verification.** Experiment 1 for Do-PFN and CausalPFN was re-run on CPU (macOS) with this code.
+It reproduces the committed results to within a relative error of 2 × 10⁻⁵; those results were
+originally computed on Windows, with CausalPFN on GPU. The plotting code rebuilds figures from `results/` that are
+byte-identical to what the original scripts produced, and the test suite checks that the committed
+tables match the results they are built from.
 
-Experiment 2, the sample-size study:
+## Tests
 
 ```bash
-$PY_DOPFN     run_reps.py --method tabpfn_t  --reps 100
-$PY_DOPFN     run_reps.py --method dopfn     --reps 100
-$PY_CAUSALPFN run_reps.py --method causalpfn --reps 100
-
-# Lalonde CPS at large n
-export CATE_TRAIN_SIZES=2000,4000,6000,8000,10000 CATE_FIG_SUFFIX=_large_n
-$PY_DOPFN     run_reps.py --method tabpfn_t  --reps 100 --datasets lalonde_cps
-$PY_DOPFN     run_reps.py --method dopfn     --reps 100 --datasets lalonde_cps
-$PY_CAUSALPFN run_reps.py --method causalpfn --reps 100 --datasets lalonde_cps
+pip install -e ".[dev]"
+ruff check . && pytest
 ```
 
-Experiment 3, the contamination study:
-
-```bash
-unset CATE_TRAIN_SIZES CATE_FIG_SUFFIX
-for m in tabpfn_t dopfn; do
-  $PY_DOPFN run_contamination.py --method $m --reps 100 --datasets lalonde_cps lalonde_psid ihdp acic2016
-done
-$PY_CAUSALPFN run_contamination.py --method causalpfn --reps 100 --datasets lalonde_cps lalonde_psid ihdp acic2016
-```
-
-Hardware used: one NVIDIA RTX 5090 Laptop GPU (24 GB). Do-PFN runs on CPU because of a dtype bug
-in its CUDA forward pass.
-
-> **Note:** Don't pipe runner output (e.g. `| tail`) when running in the background. Once the parent
-> shell exits, the process blocks forever writing to stdout.
-
-**5. Plot.** This writes the figures to `figures/`:
-
-```bash
-unset CATE_TRAIN_SIZES CATE_FIG_SUFFIX
-$PY_DOPFN plot_boxplot.py                                    # Figure 1 + per-dataset panels
-$PY_DOPFN plot_contamination.py --datasets ihdp acic2016 lalonde_cps lalonde_psid   # Figure 2
-```
+The tests cover the metrics, the sampling, the contamination model, and the runner (using a fake
+model). They also check the committed results: every planned cell is present exactly once, and
+the Experiment 1 table matches the poster.
 
 ## Limitations
 
-- A single realization of each dataset is used. Box spreads reflect training-sample variability,
-  not variability of the data-generating process.
-- Only the public Do-PFN **v1** checkpoint could be evaluated. The v1.1 model reported in the
-  paper has not been released.
-- Experiment 1 is a single training run per dataset, so its table has no error bars.
+- One realization per dataset: box spreads reflect training-sample variability, not variability
+  of the data-generating process.
+- Only the public Do-PFN v1 checkpoint could be tested; the v1.1 model in the paper is not
+  released.
+- Experiment 1 is a single fit per dataset, so its table has no error bars.
+- This is an evaluation study; it does not propose a new estimator.
 
 ## References
 
-- Hollmann et al. (2025). *Accurate predictions on small data with a tabular foundation model.* Nature.
-- Balazadeh et al. (2025). *CausalPFN: Amortized Causal Effect Estimation via In-Context Learning.* arXiv:2506.07918.
-- Robertson et al. (2025). *Do-PFN: In-Context Learning for Causal Effect Estimation.* NeurIPS 2025.
-- Hill (2011). *Bayesian Nonparametric Modeling for Causal Inference.* (IHDP)
-- Dorie et al. (2019). *Automated versus Do-It-Yourself Methods for Causal Inference.* (ACIC 2016)
-- LaLonde (1986); Dehejia & Wahba (1999). (Lalonde CPS / PSID)
+- Hollmann et al. (2025). *Accurate predictions on small data with a tabular foundation model.* Nature 637.
+- Grinsztajn et al. (2026). *TabPFN-3: Technical report.* arXiv:2605.13986.
+- Balazadeh et al. (2025). *CausalPFN: Amortized causal effect estimation via in-context learning.* NeurIPS 2025.
+- Robertson et al. (2025). *Do-PFN: In-context learning for causal effect estimation.* NeurIPS 2025.
+- Hill (2011), IHDP; Dorie et al. (2019), ACIC 2016; LaLonde (1986) and Dehejia & Wahba (1999), Lalonde.
 
-The datasets are not redistributed here. `prepare_data.py` loads them from the CausalPFN
-repository and the public ACIC 2016 source, under their original terms.
+The datasets are not redistributed; they are loaded through the CausalPFN repository under
+their original terms.
 
 ## Author
 
 **Chia-Yu Ou**, Department of Information Management and Finance, National Yang Ming Chiao Tung
-University (NYCU).
-Summer research project, 2026, supervised by Dr. Tso-Jung Yen.
+University (NYCU). Summer research project, 2026, supervised by Dr. Tso-Jung Yen.
 
 ## License
 
-Code is released under the [MIT License](LICENSE).
+[MIT](LICENSE)
