@@ -1,0 +1,263 @@
+[
+  {
+    "method": "tabpfn_t",
+    "dataset": "ihdp",
+    "n_train": 100,
+    "pehe": 0.4929800878310614,
+    "seconds": 8.533679008483887,
+    "cate_pred_mean": 3.9992878437042236,
+    "cate_pred_sd": 0.9711958765983582
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "ihdp",
+    "n_train": 200,
+    "pehe": 0.4051012959525279,
+    "seconds": 2.0057625770568848,
+    "cate_pred_mean": 4.2002034187316895,
+    "cate_pred_sd": 1.0613659620285034
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "ihdp",
+    "n_train": 300,
+    "pehe": 0.4126864494939525,
+    "seconds": 1.9619455337524414,
+    "cate_pred_mean": 4.010088920593262,
+    "cate_pred_sd": 1.0062943696975708
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "ihdp",
+    "n_train": 400,
+    "pehe": 0.36231562535288936,
+    "seconds": 2.0621206760406494,
+    "cate_pred_mean": 3.9418041706085205,
+    "cate_pred_sd": 0.9334419369697571
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "ihdp",
+    "n_train": 500,
+    "pehe": 0.35374570243175746,
+    "seconds": 1.9207398891448975,
+    "cate_pred_mean": 4.058704853057861,
+    "cate_pred_sd": 0.7853943705558777
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "ihdp",
+    "n_train": 672,
+    "pehe": 0.3312469637032613,
+    "seconds": 5.282961845397949,
+    "cate_pred_mean": 4.01744270324707,
+    "cate_pred_sd": 0.8998748064041138
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "acic2016",
+    "n_train": 100,
+    "pehe": 1.5837912770463785,
+    "seconds": 2.1467225551605225,
+    "cate_pred_mean": 2.439668655395508,
+    "cate_pred_sd": 3.565286159515381
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "acic2016",
+    "n_train": 200,
+    "pehe": 1.3395353258480696,
+    "seconds": 2.0367555618286133,
+    "cate_pred_mean": 1.983461856842041,
+    "cate_pred_sd": 3.980888843536377
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "acic2016",
+    "n_train": 300,
+    "pehe": 1.325139009362247,
+    "seconds": 2.211566925048828,
+    "cate_pred_mean": 2.1511037349700928,
+    "cate_pred_sd": 3.9385359287261963
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "acic2016",
+    "n_train": 400,
+    "pehe": 1.0463247317213942,
+    "seconds": 2.2708616256713867,
+    "cate_pred_mean": 1.8078886270523071,
+    "cate_pred_sd": 3.871488094329834
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "acic2016",
+    "n_train": 500,
+    "pehe": 0.877801810440236,
+    "seconds": 2.4261255264282227,
+    "cate_pred_mean": 1.9926652908325195,
+    "cate_pred_sd": 3.9121782779693604
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "acic2016",
+    "n_train": 4321,
+    "pehe": 0.4196339683131827,
+    "seconds": 6.921477794647217,
+    "cate_pred_mean": 2.004897356033325,
+    "cate_pred_sd": 4.009369373321533
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_cps",
+    "n_train": 100,
+    "pehe": 9508.36086058864,
+    "seconds": 1.8135571479797363,
+    "cate_pred_mean": -7533.89697265625,
+    "cate_pred_sd": 7115.39111328125
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_cps",
+    "n_train": 200,
+    "pehe": 9183.176873682758,
+    "seconds": 1.7948668003082275,
+    "cate_pred_mean": -7287.11328125,
+    "cate_pred_sd": 7083.3876953125
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_cps",
+    "n_train": 300,
+    "pehe": 9042.010507030534,
+    "seconds": 1.8283369541168213,
+    "cate_pred_mean": -8330.466796875,
+    "cate_pred_sd": 6434.009765625
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_cps",
+    "n_train": 400,
+    "pehe": 9065.143337061007,
+    "seconds": 2.0871856212615967,
+    "cate_pred_mean": -8526.0341796875,
+    "cate_pred_sd": 6494.00537109375
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_cps",
+    "n_train": 500,
+    "pehe": 9378.455730863618,
+    "seconds": 2.0955488681793213,
+    "cate_pred_mean": -8775.935546875,
+    "cate_pred_sd": 6896.8486328125
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_cps",
+    "n_train": 2000,
+    "pehe": 9352.051872554903,
+    "seconds": 10.360894918441772,
+    "cate_pred_mean": -4434.53173828125,
+    "cate_pred_sd": 6310.8359375
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_cps",
+    "n_train": 4000,
+    "pehe": 8819.879629293506,
+    "seconds": 7.305540561676025,
+    "cate_pred_mean": -7567.1865234375,
+    "cate_pred_sd": 6258.32958984375
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_cps",
+    "n_train": 6000,
+    "pehe": 8998.134357682298,
+    "seconds": 9.396491527557373,
+    "cate_pred_mean": -8854.7255859375,
+    "cate_pred_sd": 6952.34814453125
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_cps",
+    "n_train": 8000,
+    "pehe": 8848.696185697589,
+    "seconds": 11.121462106704712,
+    "cate_pred_mean": -7854.5556640625,
+    "cate_pred_sd": 7087.783203125
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_cps",
+    "n_train": 10000,
+    "pehe": 8866.550546420887,
+    "seconds": 14.203159093856812,
+    "cate_pred_mean": -8042.63427734375,
+    "cate_pred_sd": 7065.0830078125
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_cps",
+    "n_train": 14559,
+    "pehe": 8976.181471327924,
+    "seconds": 10.922312021255493,
+    "cate_pred_mean": -8644.5732421875,
+    "cate_pred_sd": 7042.4462890625
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_psid",
+    "n_train": 100,
+    "pehe": 13602.760724096086,
+    "seconds": 1.7370402812957764,
+    "cate_pred_mean": -15844.1005859375,
+    "cate_pred_sd": 12105.32421875
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_psid",
+    "n_train": 200,
+    "pehe": 13357.01002872609,
+    "seconds": 1.728227138519287,
+    "cate_pred_mean": -14512.3408203125,
+    "cate_pred_sd": 11583.625
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_psid",
+    "n_train": 300,
+    "pehe": 13347.136831492915,
+    "seconds": 2.0218684673309326,
+    "cate_pred_mean": -14463.41015625,
+    "cate_pred_sd": 11912.0791015625
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_psid",
+    "n_train": 400,
+    "pehe": 13281.223130336415,
+    "seconds": 1.9368960857391357,
+    "cate_pred_mean": -14581.0751953125,
+    "cate_pred_sd": 11791.474609375
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_psid",
+    "n_train": 500,
+    "pehe": 13303.916846585333,
+    "seconds": 1.9099798202514648,
+    "cate_pred_mean": -14118.2255859375,
+    "cate_pred_sd": 11619.24609375
+  },
+  {
+    "method": "tabpfn_t",
+    "dataset": "lalonde_psid",
+    "n_train": 2407,
+    "pehe": 13316.273817835323,
+    "seconds": 4.5327746868133545,
+    "cate_pred_mean": -14185.7236328125,
+    "cate_pred_sd": 11797.3388671875
+  }
+]

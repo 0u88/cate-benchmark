@@ -1,0 +1,76 @@
+diff --git a/datasets/__init__.py b/datasets/__init__.py
+index 456df67..6658468 100644
+--- a/datasets/__init__.py
++++ b/datasets/__init__.py
+@@ -326,7 +326,7 @@ def load_semi_real_interventional_datasets():
+     datasets_to_return = []
+     for i in tqdm.tqdm(range(len(semi_real_datasets)), desc=f'Semi-Real Benchmarks'):
+         dataset = semi_real_datasets[i]
+-        data_path = Path('data/semi_real_new') / dataset
++        data_path = Path('data/semi_real') / dataset
+ 
+         with open(str(data_path) + f'/{dataset}.pkl', 'rb') as f:
+             ds = pkl.load(f)
+@@ -349,7 +349,7 @@ def load_prior_sampling_casestudies(n_max: int = 10):
+     casestudy_benchmarks = []
+ 
+     for casestudy in synthetic_casestudies:
+-        data_path = Path('/work/dlclarge1/robertsj-dopfn/Do-PFN/data/prior_new') / casestudy
++        data_path = Path('data/prior_sampling') / casestudy
+         for i in tqdm.tqdm(range(1, n_max+1), desc=f'{casestudy} Benchmarks'):
+             with open(str(data_path) + f'/{casestudy}_{i}.pkl', 'rb') as f:
+                 casestudy_benchmarks.append(pkl.load(f))
+diff --git a/model/layer.py b/model/layer.py
+index f651d06..14b28c0 100644
+--- a/model/layer.py
++++ b/model/layer.py
+@@ -5,11 +5,11 @@ import typing as tp
+ import torch
+ from torch import nn
+ import torch.nn.functional as F
++from typing import Optional
+ from torch.nn.modules.transformer import (
+     _get_activation_fn,
+     Module,
+     Tensor,
+-    Optional,
+     MultiheadAttention,
+     Linear,
+     Dropout,
+diff --git a/scripts/transformer_prediction_interface/base.py b/scripts/transformer_prediction_interface/base.py
+index 8e29a1f..b8b3ccb 100644
+--- a/scripts/transformer_prediction_interface/base.py
++++ b/scripts/transformer_prediction_interface/base.py
+@@ -397,9 +397,9 @@ class TabPFNBaseModel(BaseEstimator):
+             )
+ 
+         X = check_array(
+-            X, accept_sparse="csr", dtype=np.float32, force_all_finite=False
++            X, accept_sparse="csr", dtype=np.float32, ensure_all_finite=False
+         )
+-        y = check_array(y, ensure_2d=False, dtype=np.float32, force_all_finite=False)
++        y = check_array(y, ensure_2d=False, dtype=np.float32, ensure_all_finite=False)
+ 
+         check_consistent_length(X, y)
+ 
+@@ -1267,9 +1267,9 @@ class TabPFNBaseModel(BaseEstimator):
+         # Check is fit had been called
+         check_is_fitted(self)
+ 
+-        # Input validation
++        X_eval_np = X_eval.cpu().detach().numpy() if isinstance(X_eval, torch.Tensor) else X_eval
+         X_eval = check_array(
+-            X_eval.cpu().detach().numpy(), accept_sparse="csr", dtype=np.float32, force_all_finite=False
++            X_eval_np, accept_sparse="csr", dtype=np.float32, ensure_all_finite=False
+         )
+ 
+         if X_eval.shape[1] != self.n_features_in_:
+@@ -1612,7 +1612,7 @@ class TabPFNBaseModel(BaseEstimator):
+                     total_memory = (
+                         os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_PHYS_PAGES") / 1e9
+                     )
+-                except ValueError:
++                except (ValueError, AttributeError):
+                     utils.print_once(
+                         "Could not determine size of memory of this system, using default 8 GB"
+                     )

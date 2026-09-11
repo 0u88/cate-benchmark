@@ -1,0 +1,14 @@
+# Upstream model repos (cloned locally, not vendored)
+third_party/CausalPFN/
+third_party/Do-PFN/
+
+# Python
+__pycache__/
+*.pyc
+.venv*/
+
+# Prepared splits (regenerate with scripts/prepare_data.py)
+data/
+
+# OS
+.DS_Store
