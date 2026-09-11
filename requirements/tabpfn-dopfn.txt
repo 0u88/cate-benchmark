@@ -1,6 +1,9 @@
-# Environment for TabPFN v3 (T-learner) and Do-PFN runs
-# Python 3.12.13; frozen 2026-08-31
-
+# Exact environment for the TabPFN v3 (T-learner) and Do-PFN runs. Python 3.12.
+# Frozen from the environment used in the study (2026-08-31).
+#
+# CPU (tested on macOS arm64):   pip install -r requirements/tabpfn-dopfn.txt
+# CUDA 12.8, as used for the study:
+#   pip install -r requirements/tabpfn-dopfn.txt --extra-index-url https://download.pytorch.org/whl/cu128
 annotated-types==0.8.0
 anyio==4.14.2
 beautifulsoup4==4.15.0
@@ -13,7 +16,6 @@ charset-normalizer==3.4.9
 clarabel==0.11.1
 click==8.4.2
 cloudpickle==3.1.2
-colorama==0.4.6
 contourpy==1.3.3
 cvxpy==1.9.2
 cycler==0.12.1
@@ -91,12 +93,11 @@ statsmodels==0.14.6
 sympy==1.14.0
 tabpfn==8.2.0
 threadpoolctl==3.6.0
-torch==2.11.0+cu128
+torch==2.11.0
 torchmetrics==1.9.0
 tqdm==4.70.0
 typing-extensions==4.15.0
 typing-inspection==0.4.2
 tzdata==2026.3
 urllib3==2.7.0
-win32-setctime==1.2.0
 xgboost==3.4.0
