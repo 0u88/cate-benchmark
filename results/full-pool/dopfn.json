@@ -1,0 +1,46 @@
+[
+  {
+    "method": "dopfn",
+    "dataset": "ihdp",
+    "n_train": 672,
+    "rep": 0,
+    "n_treated": 123,
+    "pehe": 1.689186801396075,
+    "cate_pred_mean": 2.7834880352020264,
+    "cate_pred_sd": 0.7997174263000488,
+    "seconds": 0.8015487194061279
+  },
+  {
+    "method": "dopfn",
+    "dataset": "acic2016",
+    "n_train": 4321,
+    "rep": 0,
+    "n_treated": 768,
+    "pehe": 4.297306439771343,
+    "cate_pred_mean": 0.7490196228027344,
+    "cate_pred_sd": 0.26857736706733704,
+    "seconds": 7.6463141441345215
+  },
+  {
+    "method": "dopfn",
+    "dataset": "lalonde_cps",
+    "n_train": 14559,
+    "rep": 0,
+    "n_treated": 154,
+    "pehe": 12157.726308539843,
+    "cate_pred_mean": -559.3482666015625,
+    "cate_pred_sd": 1424.6480712890625,
+    "seconds": 112.40856981277466
+  },
+  {
+    "method": "dopfn",
+    "dataset": "lalonde_psid",
+    "n_train": 2407,
+    "rep": 0,
+    "n_treated": 141,
+    "pehe": 21188.06547637171,
+    "cate_pred_mean": -934.5919799804688,
+    "cate_pred_sd": 3808.710693359375,
+    "seconds": 3.1719932556152344
+  }
+]

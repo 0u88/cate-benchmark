@@ -1,7 +1,8 @@
-"""Shared figure style and reference lines for the boxplot figures.
+"""Shared figure style and the reference lines drawn in every panel.
 
-Colors come from a validated categorical palette (light mode). The two model-free
-reference levels (predict-zero and oracle) are drawn by `_add_reference`.
+Colors come from a validated categorical palette (light mode). The two
+model-free reference levels (predict-zero and oracle) are read from
+results/datasets.json, so figures can be rebuilt without loading the data.
 """
 from __future__ import annotations
 
@@ -10,13 +11,16 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-from common import TRAIN_SIZES
+from ..results import load_dataset_stats
 
 SURFACE = "#fcfcfb"
 INK = "#0b0b0b"
 MUTED = "#898781"
 GRID = "#e1e0d9"
 AXIS = "#c3c2b7"
+
+# Validated categorical palette, slots 1-3.
+COLORS = {"tabpfn_t": "#2a78d6", "causalpfn": "#e34948", "dopfn": "#1baf7a"}
 
 plt.rcParams.update(
     {
@@ -29,39 +33,29 @@ plt.rcParams.update(
 )
 
 
-def _thousands(v, _pos):
+def thousands(v, _pos):
     if abs(v) >= 1000:
         return f"{v:,.0f}"
     return f"{v:g}"
 
 
 def reference_levels(dataset: str) -> tuple[float, float]:
-    """The two model-free reference PEHEs for a dataset.
+    """(predict-zero, oracle) for a dataset; see metrics.reference_levels.
 
-    predict-zero  sqrt(mean(tau^2))  -- predict tau_hat = 0 for every unit.
-                  A method sitting here has extracted nothing.
-    oracle        sd(tau)            -- predict the true constant mean effect.
-                  A method below here has captured real heterogeneity; between
-                  the two it has only recovered the level.
-
-    Both depend solely on the test set's true CATE, so they are constant across
-    n and across methods. The oracle is the stricter reference and matters most
+    Both depend only on the test set's true CATE, so they are constant across
+    n, sigma and methods. The oracle is the stricter reference and matters most
     where the CATE's mean dwarfs its spread (IHDP: mean 4.06, sd 0.79), because
     predict-zero flatters a method there.
     """
-    import numpy as np
-
-    from common import load_split
-
-    tau = np.asarray(load_split(dataset, TRAIN_SIZES[0])["true_cate"], dtype=np.float64)
-    return float(np.sqrt(np.mean(tau**2))), float(tau.std())
+    stats = load_dataset_stats()[dataset]
+    return stats["predict_zero"], stats["oracle"]
 
 
 def _fmt(v: float) -> str:
     return f"{v:,.0f}" if abs(v) >= 1000 else f"{v:.2f}"
 
 
-def _add_reference(ax, dataset: str, xspan: tuple[float, float] | None = None) -> None:
+def add_reference(ax, dataset: str, xspan: tuple[float, float]) -> None:
     """Draw both reference levels, annotating any that fall off scale.
 
     Drawing a reference to scale is skipped when it would stretch the y-axis by
@@ -69,11 +63,9 @@ def _add_reference(ax, dataset: str, xspan: tuple[float, float] | None = None) -
     above every method (0.28-1.62). The oracle there (0.79) does fit, and is the
     informative one.
 
-    `xspan` is where to anchor the two labels (left, right). It defaults to the
-    training-size axis; the boxplots pass tick positions instead, since their
-    x-axis is categorical.
+    `xspan` is where to anchor the two labels (left, right), in data coordinates.
     """
-    x_left, x_right = xspan if xspan else (TRAIN_SIZES[0], TRAIN_SIZES[-1])
+    x_left, x_right = xspan
     ref0, oracle = reference_levels(dataset)
     lo, hi = ax.get_ylim()
     limit = hi + 0.6 * (hi - lo)  # computed before any expansion

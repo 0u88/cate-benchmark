@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cate-benchmark"
+version = "1.0.0"
+description = "Benchmarking tabular foundation models (TabPFN v3, CausalPFN, Do-PFN) for CATE estimation"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [{name = "Chia-Yu Ou"}]
+requires-python = ">=3.10"
+dependencies = ["numpy>=1.26"]
+
+[project.optional-dependencies]
+plot = ["matplotlib>=3.8"]
+test = ["matplotlib>=3.8", "pytest>=8"]
+dev = ["matplotlib>=3.8", "pytest>=8", "ruff>=0.6"]
+
+[project.scripts]
+cate-bench = "cate_benchmark.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+# B905: zip(strict=...) is noise for the fixed-length zips used here.
+ignore = ["B905"]

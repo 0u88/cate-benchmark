@@ -1,4 +1,4 @@
-"""Corrupt the observed confounders by a controlled amount.
+"""Corrupt the observed covariates by a controlled amount.
 
 The experiment varies *measurement quality* of the covariates instead of the
 training-set size. Both the training and the test covariates are corrupted --
